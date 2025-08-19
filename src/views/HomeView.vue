@@ -19,7 +19,7 @@ onBeforeMount(() => {
     <h1 class="header__title">
       <span class="material-symbols-outlined"> location_on </span>서울
     </h1>
-    <h2 class="header__date">{{ dayjs().format('HH:mm') }}</h2>
+    <h2 class="header__date">{{ dayjs().format('YYYY-MM-DD') }}</h2>
   </header>
   <!-- 현재 날씨 -->
   <main v-if="currentConditions" class="main">

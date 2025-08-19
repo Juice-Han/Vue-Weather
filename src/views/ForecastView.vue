@@ -1,4 +1,16 @@
-<script setup></script>
+<script setup>
+import { getImage, dayToKor } from '@/composables/helper';
+import { useWeatherStore } from '@/stores/weather';
+import dayjs from 'dayjs';
+import { storeToRefs } from 'pinia';
+import { onBeforeMount } from 'vue';
+
+const weatherStore = useWeatherStore()
+const { hours, forecast } = storeToRefs(weatherStore)
+onBeforeMount(() => {
+  weatherStore.getCurrentWeatherInfo()
+})
+</script>
 <template>
   <article class="forecast">
     <!-- 시간별 예보 -->
@@ -6,10 +18,10 @@
       <strong class="forecast__title">시간별</strong>
       <ul class="week__list">
         <!-- 시간별 예보 상세 아이템 -->
-        <li class="week__list__item">
-          <span>9시</span>
-          <img src="@/assets/images/icons/hail.png" alt="" class="week_icons" />
-          <span>18°</span>
+        <li v-for="hour in hours" :key="hour.datetime" class="week__list__item">
+          <span>{{ dayjs(`0000-00-00 ${hour.datetime}`).format('H') }}시</span>
+          <img :src="getImage(hour.icon)" :alt="`${hour.datetime} ${hour.temp}도`" class="week_icons" />
+          <span>{{ hour.temp }}°</span>
         </li>
       </ul>
     </section>
@@ -18,16 +30,16 @@
       <strong class="forecast__title">중기예보</strong>
       <ul class="forecast__weekList">
         <!-- 중기 예보 상세 아이템 -->
-        <li class="forecast__weekListItem">
+        <li v-for="day in forecast" :key="day.datetime" class="forecast__weekListItem">
           <div class="forecast__itemLeft">
-            <strong class="forecast__day">월요일</strong>
-            <span class="forecast__date">2024.07.01</span>
+            <strong class="forecast__day">{{ dayToKor[dayjs(day.datetime).day()] }}</strong>
+            <span class="forecast__date">{{ dayjs(day.datetime).format('YYYY.MM.DD') }}</span>
           </div>
           <div class="forecast__itemMiddle">
-            <strong class="forecast__tmp">32°</strong>
+            <strong class="forecast__tmp">{{ day.temp}}°</strong>
           </div>
           <div class="forecast__itemRight">
-            <img src="@/assets/images/icons/hail.png" alt="" class="forecast__weekListImg" />
+            <img :src="getImage(day.icon)" :alt="`${day.datetime} ${day.temp}도`" class="forecast__weekListImg" />
           </div>
         </li>
       </ul>
