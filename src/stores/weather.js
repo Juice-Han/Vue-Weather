@@ -13,12 +13,12 @@ export const useWeatherStore = defineStore('weather', () => {
   const address = ref('seoul')
   const currentConditions = ref(null)
   const getCurrentWeatherInfo = async () => {
-    try{
+    try {
       const res = await axiosInstance.get('/' + address.value)
       currentConditions.value = res.data.currentConditions
-    }catch(e){
+    } catch (e) {
       alert(e.response?.data ? e.response?.data : e.message)
     }
   }
-  return {currentConditions, getCurrentWeatherInfo}
+  return { currentConditions, getCurrentWeatherInfo }
 })
