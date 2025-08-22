@@ -10,6 +10,12 @@ const axiosInstance = axios.create({
     unitGroup: 'metric',
   }
 })
+const axiosInstance2 = axios.create({
+  baseURL: 'https://api64.ipify.org/?format=json',
+})
+const axiosInstance3 = axios.create({
+  baseURL: 'https://free.freeipapi.com/api/json'
+})
 export const useWeatherStore = defineStore('weather', () => {
   const address = ref('seoul')
   const days = ref(null)
@@ -33,7 +39,7 @@ export const useWeatherStore = defineStore('weather', () => {
     }
   }
   const getSearchWeatherInfo = async (city) => {
-    try{
+    try {
       const res = await axiosInstance.get('/' + city)
       const printData = {
         address: res.data.address,
@@ -42,15 +48,26 @@ export const useWeatherStore = defineStore('weather', () => {
         icon: res.data.currentConditions.icon,
         temp: res.data.currentConditions.temp,
       }
-      if (searchData.value.findIndex((v)=> v.address === res.data.address) === -1){
+      if (searchData.value.findIndex((v) => v.address === res.data.address) === -1) {
         searchData.value.push(printData)
-      }else {
+      } else {
         alert('이미 조회한 지역입니다.')
       }
-    }catch(e){
+    } catch (e) {
       console.log(e)
-      alert(e.response?.data ? e.response.data: e.message)
+      alert(e.response?.data ? e.response.data : e.message)
     }
   }
-  return { currentConditions, hours, forecast, searchData, getCurrentWeatherInfo, getSearchWeatherInfo }
+  const getCityName = async () => {
+    try {
+      const res = await axiosInstance2.get()
+      const ip = res.data.ip
+      const res2 = await axiosInstance3.get('/' + ip)
+      address.value = res2.data.cityName.split(' ')[0]
+      console.log(res2)
+    } catch (e) {
+      alert(e.response?.data ? e.response.data : e.message)
+    }
+  }
+  return { currentConditions, hours, forecast, searchData, getCurrentWeatherInfo, getSearchWeatherInfo, getCityName, address }
 })
