@@ -1,24 +1,48 @@
-<script setup></script>
+<script setup>
+import { getImage } from '@/composables/helper';
+import { useWeatherStore } from '@/stores/weather';
+import { storeToRefs } from 'pinia';
+import { onBeforeMount, ref, watch } from 'vue';
+
+const weatherStore = useWeatherStore()
+const { searchData } = storeToRefs(weatherStore)
+const city = ref('')
+const searchWeather = async () => {
+  await weatherStore.getSearchWeatherInfo(city.value)
+  city.value = ''
+}
+watch(() => searchData, (newValue) => {
+  localStorage.setItem('searchData', JSON.stringify(newValue.value))
+}, { deep: true })
+onBeforeMount(() => {
+  const localData = JSON.parse(localStorage.getItem('searchData')) || []
+  searchData.value = localData
+})
+const removeItem = (address) => {
+  searchData.value = searchData.value.filter((v) => v.address !== address)
+}
+</script>
 <template>
   <main class="weather-city">
     <!-- 검색 영역 -->
     <section class="weather__search">
-      <input type="text" class="weather__searchBar" placeholder="도시를 검색해주세요" />
+      <input type="text" class="weather__searchBar" placeholder="도시를 검색해주세요" @input="(e) => city = e.target.value"
+        :value="city" @keypress.enter="searchWeather" />
     </section>
     <!-- 검색 데이터가 있으면 -->
-    <section class="weather__city">
+    <section v-for="data in searchData" class="weather__city" :key="data.address">
       <div class="weather__cityLeft">
-        <strong class="weather__cityTmp">25°</strong>
-        <p class="weather__cityTmpMore">H: 27° / L: 19°</p>
-        <p>Montral, Canada</p>
+        <strong class="weather__cityTmp">{{ data.temp }}°</strong>
+        <p class="weather__cityTmpMore">H: {{ data.feelslikemax }}° / L: {{ data.feelslikemin }}°</p>
+        <p>{{ data.address }}</p>
       </div>
       <div class="weather__cityRight">
-        <img src="@/assets/images/icons/cloudy.png" alt="" class="weather__cityImg" />
+        <img :src="getImage(data.icon)" :alt="`${data.address} ${data.temp}도`" class="weather__cityImg" />
       </div>
-      <span class="material-symbols-outlined weather__cancel"> cancel </span>
+      <span class="material-symbols-outlined weather__cancel" @click="removeItem(data.address)"> cancel </span>
     </section>
     <!-- 검색 데이터가 없으면 -->
-    <section class="no-data" style="display: none">
+    <section v-if="searchData.length === 0" class="no-data">
       <p>검색한 지역이 없습니다.</p>
     </section>
   </main>
